@@ -2,10 +2,14 @@ import socket
 import sys
 from threading import Thread
 from datetime import datetime
+from colorama import init
+
+init()
 
 HOST = 'localhost'
 PORT = 8080
 BLOCK_SIZE = 1024
+
 
 
 def main():
@@ -24,12 +28,12 @@ def main():
         userName = input("Enter your username: ")
         
         while True:
-            msg = input()
-            now = datetime.now()
-            currentTime = now.strftime("%H:%M:%S")
+            
+            msg = f"\1[{userName}]:\1 {input()}".encode("utf-8")
             
             try:
-                clientSocket.send(("[" + userName + "]" + "<" + currentTime + ">" + ": " + msg).encode("utf-8"))
+                clientSocket.send(msg)
+                
             except ConnectionResetError:
                 handleException()
                 
@@ -40,10 +44,24 @@ def main():
         
         while True:
             try:
-                data = clientSocket.recv(BLOCK_SIZE).decode("utf-8")
+
+                data = clientSocket.recv(BLOCK_SIZE).decode("utf-8").strip("\1")
+                
                 if not data:
                     break
-                print(data)
+                   
+                try:
+                
+                    message = data.split("\1")
+                    header = (data.split("\1"))[0] + (data.split("\1"))[1]
+                    data = (data.split("\1"))[2]
+                    
+                    print (header + data)
+                    
+                except IndexError:
+                    print(data)
+                
+                
             except ConnectionResetError:
                 handleException()
                 

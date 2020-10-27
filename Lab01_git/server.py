@@ -1,5 +1,6 @@
 import socket
 from threading import Thread
+from datetime import datetime
 
 
 HOST = 'localhost'
@@ -35,12 +36,25 @@ def main():
         try:
             while True:
                 data = conn.recv(BLOCK_SIZE).decode("utf-8")
+                
                 if not data:
                     break
+                   
+                now = datetime.now()
+                currentTime = now.strftime("%H:%M:%S")
+            
+                timestamp = f"<{currentTime}> "
+                print(timestamp)
+                print(data[0])
+                
+                
                 for receiver in connectedUsers:
                     try:
-                        receiver.send(data.encode("utf-8"))
-                        
+                        if (data[0] == "\1"):
+                            receiver.send((timestamp + data).encode("utf-8"))
+                        else:
+                            receiver.send((data).encode("utf-8"))
+                            
                     except ConnectionResetError:
                         print("This user disconnected")
                     
